@@ -2,6 +2,8 @@ package main
 
 import (
 	"sync/atomic"
+	"net/http"
+	"net/http/httputil"
 )
 
 type LoadBalancer struct {
@@ -28,4 +30,15 @@ func (lb *LoadBalancer) NextBackend() *Backend {
         }
     }
     return nil
+}
+
+func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	peer := lb.NextBackend()
+	if peer == nil {
+	http.Error(w, "Service not available", http.StatusServiceUnavailable)
+	return
+	}
+
+	proxy := httputil.NewSingleHostReverseProxy(peer.url)
+    proxy.ServeHTTP(w, r)
 }
