@@ -32,9 +32,13 @@ func main() {
 
     fmt.Println("Load balancer started on :8000")
 
+    mux := http.NewServeMux()
+    mux.HandleFunc("/status", lb.statusHandler)
+    mux.Handle("/", lb)
+
     server := http.Server{
         Addr:    ":8000",
-        Handler: lb,
+        Handler: mux,
     }
 
     if err := server.ListenAndServe(); err != nil {

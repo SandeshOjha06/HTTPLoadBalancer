@@ -4,11 +4,17 @@ import (
 	"sync/atomic"
 	"net/http"
 	"net/http/httputil"
+    "encoding/json"
 )
 
 type LoadBalancer struct {
 backends []*Backend
 current uint64
+}
+
+type BackendStatus struct {
+        URL string `json:"url"`
+        Alive bool `json:"alive"`
 }
 
 func (lb *LoadBalancer) NextBackend() *Backend {
@@ -41,4 +47,23 @@ func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	proxy := httputil.NewSingleHostReverseProxy(peer.url)
     proxy.ServeHTTP(w, r)
+}
+
+func (lb *LoadBalancer) statusHandler(w http.ResponseWriter, r *http.Request) {
+   var statuses []BackendStatus
+
+   for _, b := range lb.backends {
+    statuses = append(statuses, BackendStatus{
+        URL: b.url.String(),
+        Alive: b.isAlive(),
+    })
+   }
+
+    w.Header().Set("Content-Type", "application/json")
+    // marshal to JSON
+    if err := json.NewEncoder(w).Encode(statuses); err != nil {
+        // write to w
+        http.Error(w, "Failed to encode status", http.StatusInternalServerError)
+        return
+    }
 }
