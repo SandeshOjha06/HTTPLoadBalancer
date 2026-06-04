@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http/httputil"
 	"net/url"
 	"sync"
 )
