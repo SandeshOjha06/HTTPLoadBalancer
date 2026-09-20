@@ -60,7 +60,7 @@ The `+ uint64(i)` walks forward from the starting point, so if backend N is dead
 ## Build and run
 
 ```bash
-git clone https://github.com/sandesh-ojha/lb
+git clone https://github.com/SandeshOjha06/HTTPLoadBalancer.git
 cd lb
 go build -o lb .
 
